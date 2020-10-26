@@ -1,18 +1,18 @@
-# Evaluation for Text-to-SQL Using Distilled Test Suites
+# Semantic Evaluation for Text-to-SQL with Test Suites
 
-This repo contains test suite evaluation metric for 11 text-to-SQL tasks. Compared with other current metrics, test suite calculates a tighter upper-bound for semantic accuracy efficiently. It is proposed in our EMNLP 2020 paper: [Semantic Evaluation for Text-to-SQL with Distilled Test Suites](https://arxiv.org/abs/2010.02840). It is now the official metric of [Spider](https://yale-lily.github.io/spider), [SParC](https://yale-lily.github.io/sparc), and [CoSQL](https://yale-lily.github.io/cosql), and is also now available for Academic, ATIS, Advising, Geography, IMDB, Restaurants, Scholar, and Yelp (building on the amazing work by [Catherine and Jonathan](https://github.com/jkkummerfeld/text2sql-data)).
+This repo contains test suite evaluation metric for 11 text-to-SQL tasks. Compared to other current metrics, test suite calculates a tighter upper-bound for semantic accuracy efficiently. It is proposed in our EMNLP 2020 paper: [Semantic Evaluation for Text-to-SQL with Distilled Test Suites](https://arxiv.org/abs/2010.02840). It is now the official metric of [Spider](https://yale-lily.github.io/spider), [SParC](https://yale-lily.github.io/sparc), and [CoSQL](https://yale-lily.github.io/cosql), and is also now available for Academic, ATIS, Advising, Geography, IMDB, Restaurants, Scholar, and Yelp (building on the amazing work by [Catherine and Jonathan](https://github.com/jkkummerfeld/text2sql-data)).
 
-Notice: Please refer to [Ruiqi's repo](https://github.com/ruiqi-zhong/TestSuiteEval) for the code of generating neighbor queries, sampling databases, and constructing a testsuite defined in the paper. We look forward to similar evaluations in other semantic parsing domains as well.
+Notice: Please refer to [Ruiqi's repo](https://github.com/ruiqi-zhong/TestSuiteEval) for the code to generate neighbor queries and random databases as defined in the paper. We look forward to similar evaluations in other semantic parsing domains.
 
 
 ## Setting Up
 
-To run the test suite execution evaluation, first download the test suites (databases) for the 11 text-to-SQL tasks from [here](https://drive.google.com/file/d/1IJvpd30D3qP6BZu_1bwUSi7JCyynEOMp/view?usp=sharing), and put them in `database/` directory.
+To run the test suite (execution) evaluation, first download the test suites (databases) for the 11 text-to-SQL tasks from [here](https://drive.google.com/file/d/1IJvpd30D3qP6BZu_1bwUSi7JCyynEOMp/view?usp=sharing), and put them in `database/` directory.
 
 
 ## Official Evaluation for Spider, SParC, and CoSQL
 
-We will report the test suite accuracy for the official [Spider](https://yale-lily.github.io/spider), [SParC](https://yale-lily.github.io/sparc), and [CoSQL](https://yale-lily.github.io/cosql) leaderboards (starting Oct. 2020). The original set match accuracy will be reported as a reference. 
+We will report the test suite accuracy for the official [Spider](https://yale-lily.github.io/spider), [SParC](https://yale-lily.github.io/sparc), and [CoSQL](https://yale-lily.github.io/cosql) leaderboards (starting Oct. 2020). The original exact set match accuracy will be reported as a reference. 
 
 Below is the example command to calculate the test suite accuracy for development sets of Spider, CoSQL and SParC.
 
@@ -32,7 +32,7 @@ arguments:
 ```
 
 #### Test Suite Execution Accuracy without Values
-If your system does NOT predict values in the SQL queries, you should add `--plug value` which will extract the values used in the gold query and plug them into the predicted query.
+If your system does NOT predict values in the SQL queries, you should add the `--plug value` flag, which will extract the values used in the gold query and plug them into the predicted query.
 ```
 python3 evaluation.py 
     --gold [gold file] 
@@ -63,9 +63,9 @@ python3 evaluation.py
 ```
 
 #### Other Agruments
-If `--keep_distinct` is included, the distinct keywords will NOT be removed during evaluation. For a fair comparison with the original exact set match metric, `--keep_distinct` should not be added.
+If `--keep_distinct` is included, the distinct keywords will NOT be removed during evaluation. To make a fair comparison with the original exact set match metric, `--keep_distinct` should not be added.
 
-To include `--progress_bar_for_each_datapoint` if you suspect that the execution got stuck on a specific test input; it will print the progress of running on each test input.
+Include `--progress_bar_for_each_datapoint` if you suspect that the execution got stuck on a specific test input; it will print the progress of running on each test input.
 
 
 ## Evaluation for Other Classical Text-to-SQL Datasets
