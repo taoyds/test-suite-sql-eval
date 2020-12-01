@@ -9,6 +9,11 @@ Notice: Please refer to [Ruiqi's repo](https://github.com/ruiqi-zhong/TestSuiteE
 
 To run the test suite (execution) evaluation, first download the test suites (databases) for the 11 text-to-SQL tasks from [here](https://drive.google.com/file/d/1IJvpd30D3qP6BZu_1bwUSi7JCyynEOMp/view?usp=sharing), and put them in `database/` directory.
 
+You also need to install sqlparse to run the evaluation.
+
+```
+pip3 install sqlparse
+```
 
 ## Official Evaluation for Spider, SParC, and CoSQL
 
