@@ -64,7 +64,7 @@ def judge(args: Tuple[Dict[str, Any], str]) -> bool:
     return pass_all_testcase
 
 
-def main(gold_file: str = "classical_test.pkl", preds: List[str], verbose: bool = True, num_processes: int = NUM_PROCESSES) -> List[bool]:
+def main(preds: List[str], gold_file: str = "classical_test.pkl", verbose: bool = True, num_processes: int = NUM_PROCESSES) -> List[bool]:
     gold_dicts = pkl.load(open(gold_file, 'rb'))
     assert len(gold_dicts) == len(preds), 'number of gold and prediction should be equal'
     group_name2idxes = defaultdict(list)
@@ -94,6 +94,6 @@ if __name__ == "__main__":
     preds = load_predictions(args.pred)
     assert not os.path.exists(args.out_file), 'output file path %s already exists' % args.out_file
 
-    result = main(gold_file=args.gold, preds=preds, verbose=True, num_processes=args.num_processes)
+    result = main(preds=preds, gold_file=args.gold, verbose=True, num_processes=args.num_processes)
     pkl.dump(result, open(args.out_file, 'wb'))
     print('total time used: ', time.time() - start)
