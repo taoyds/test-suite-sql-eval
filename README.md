@@ -76,6 +76,8 @@ Include `--progress_bar_for_each_datapoint` if you suspect that the execution go
 
 ## Evaluation for Other Classical Text-to-SQL Datasets
 
+**NOTE** Thanks to @rizar we identified several issues with the current release. Please use it only for the purpose of preliminary exploration.
+
 The prior work on classical text-to-sql datasets (ATIS, Academic, Advising, Geography, IMDB, Restaurants, Scholar, Yelp) usually reports the exact string match accuracy and execution accuracy over a single database content, which either exaggerates or deflates the real semantic accuracy.
 
 The test set for classical text-to-sql datasets are adopted from [this repo](https://github.com/jkkummerfeld/text2sql-data). We used all the test splits if the test split is defined, and the entire dataset otherwise. We also rewrite the SQLs to conform with the style in the Spider dataset. 
