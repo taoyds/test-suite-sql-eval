@@ -76,7 +76,7 @@ Include `--progress_bar_for_each_datapoint` if you suspect that the execution go
 
 ## Evaluation for Other Classical Text-to-SQL Datasets
 
-**NOTE** Thanks to @rizar we identified several issues with the current release. Please use it only for the purpose of preliminary exploration.
+*UPDATE:* we fixed the issue mentioned in https://github.com/taoyds/test-suite-sql-eval/issues/1 . We also added additional features to evaluate on a subset and cache the results to speed up evaluation.
 
 The prior work on classical text-to-sql datasets (ATIS, Academic, Advising, Geography, IMDB, Restaurants, Scholar, Yelp) usually reports the exact string match accuracy and execution accuracy over a single database content, which either exaggerates or deflates the real semantic accuracy.
 
@@ -89,6 +89,7 @@ All the test datapoints are saved in `classical_test.pkl`. Each test datapoint i
 - `variables`: the constants that are used in the SQL query. We also include a field called `ancestor_of_occuring_column`, where we find out all the column that contains this value and recursively find its `ancestor column` (if a column refers to a parent column/has a foreign key reference). This field is especially useful if your algorithm originally uses database content to help generate model predictions.
 - `testsuite`: a set of database paths on which we will compare denotation on
 - `texts`: the associated natural language descriptions, with the constant value extracted.
+- `orig_id`: the original data id from jonathan's repo. it is a tulple of two elements (db_id, idx) - referring to the idx^th element of the list encoded by text2sql-data/data/[db_id].json .
 
 You can evaluate your model in whatever configurations you want. For example, you may choose to plug in the values into the text and ask the model itself to figure out which constants the user has given; 
 or you can relax the modelling assumption and assume the model has oracle access to the ground truth constant value; or you can further relax the assumption of knowing which "ancestor column" contains the constant provided.
@@ -103,11 +104,30 @@ Suppose you have made a model prediction for every datapoint and write it into a
 python3 evaluate_classical.py --gold [gold file] --pred [predicted file] --out_file [output file] --num_processes [process number]
 
 arguments:
-    [gold file]        path to gold file: classical_test.pkl
+    [gold file]        path to gold file. The default is classical_test.pkl, and is hence this argument is optional.
     [predicted file]   the path to the predicted file. See an example evaluation_examples/classical_test_gold.txt 
     [output file]      the output file path. e.g. goldclassicaltest.pkl
-    [process number]   number of processes to use
+    [process number]   number of processes to use. By default, it is set to cpu_count() // 3, and is hence optional.
+    [subset]           which subset to evaluate on. can be one of {atis,advising,academic,imdb,restaurants,geography,scholar,yelp,full}
+    [disable_cache]    whether to directly apply previously computed result and cache the current results. Use this flag to disable caching.
 ```
+
+Here is an example command that evaluates the gold prediction file:
+
+```
+python3 evaluate_classical.py --pred=evaluation_examples/classical_test_gold.txt --out_file=all_eval_results.json
+```
+
+You can also choose to evaluate only on a subset of the datapoints, for example
+
+```
+python3 evaluate_classical.py --pred=evaluation_examples/academic_gold.txt --subset=academic --out_file=out/out_academic_test.json
+```
+
+By default, the evaluation script will save the results of evaluation in cache.pkl, and use it in the future (since these evaluation take a long time to run). 
+Use the ``disable_cache`` flag otherwise. 
+
+The process through which data are transformed can be seen in classical_provenance.ipynb. 
 
 
 ## Citation
