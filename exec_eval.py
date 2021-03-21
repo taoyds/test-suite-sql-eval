@@ -1,4 +1,7 @@
 import os
+import re
+import asyncio
+import sqlite3
 import threading
 from typing import Tuple, Any, List, Set
 from itertools import product
@@ -119,39 +122,49 @@ def result_eq(result1: List[Tuple], result2: List[Tuple], order_matters: bool) -
     return False
 
 
-def clean_tmp_f(f_prefix: str):
-    with threadLock:
-        for suffix in ('.in', '.out'):
-            f_path = f_prefix + suffix
-            if os.path.exists(f_path):
-                os.unlink(f_path)
+def replace_cur_year(query: str) -> str:
+    return re.sub(
+        "YEAR\s*\(\s*CURDATE\s*\(\s*\)\s*\)\s*", "2020", query, flags=re.IGNORECASE
+    )
 
 
-# we need a wrapper, because simple timeout will not stop the database connection
-def exec_on_db(sqlite_path: str, query: str, process_id: str = '', timeout: int = TIMEOUT) -> Tuple[str, Any]:
-    f_prefix = None
-    with threadLock:
-        while f_prefix is None or os.path.exists(f_prefix + '.in'):
-            process_id += str(time.time())
-            process_id += str(random.randint(0, 10000000000))
-            f_prefix = os.path.join(EXEC_TMP_DIR, process_id)
-        pkl.dump((sqlite_path, query), open(f_prefix + '.in', 'wb'))
+# get the database cursor for a sqlite database path
+def get_cursor_from_path(sqlite_path: str):
     try:
-        subprocess.call(['python3', 'exec_subprocess.py', f_prefix], timeout=timeout, stderr=open('runerr.log', 'a'))
+        if not os.path.exists(sqlite_path):
+            print("Openning a new connection %s" % sqlite_path)
+        connection = sqlite3.connect(sqlite_path)
     except Exception as e:
-        print(e)
-        clean_tmp_f(f_prefix)
-        return 'exception', e
-    result_path = f_prefix + '.out'
-    returned_val = ('exception', TimeoutError)
-    try:
-        if os.path.exists(result_path):
-            returned_val = pkl.load(open(result_path, 'rb'))
-    except:
-        pass
-    clean_tmp_f(f_prefix)
-    return returned_val
+        print(sqlite_path)
+        raise e
+    connection.text_factory = lambda b: b.decode(errors="ignore")
+    cursor = connection.cursor()
+    return cursor
 
+
+async def exec_on_db_(sqlite_path: str, query: str) -> Tuple[str, Any]:
+    query = replace_cur_year(query)
+    cursor = get_cursor_from_path(sqlite_path)
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        cursor.connection.close()
+        return "result", result
+    except Exception as e:
+        cursor.close()
+        cursor.connection.close()
+        return "exception", e
+
+async def exec_on_db(
+    sqlite_path: str, query: str, process_id: str = "", timeout: int = TIMEOUT
+) -> Tuple[str, Any]:
+    try:
+        return await asyncio.wait_for(exec_on_db_(sqlite_path, query), timeout)
+    except asyncio.TimeoutError:
+        return ('exception', TimeoutError)
+    except Exception as e:
+        return ("exception", e)
 
 
 # postprocess the model predictions to avoid execution errors
@@ -208,8 +221,8 @@ def eval_exec_match(db: str, p_str: str, g_str: str, plug_value: bool, keep_dist
             ranger = db_paths
 
         for db_path in ranger:
-            g_flag, g_denotation = exec_on_db(db_path, g_str)
-            p_flag, p_denotation = exec_on_db(db_path, pred)
+            g_flag, g_denotation = asyncio.run(exec_on_db(db_path, g_str))
+            p_flag, p_denotation = asyncio.run(exec_on_db(db_path, pred))
 
             # we should expect the gold to be succesfully executed on the database
             assert g_flag != 'exception', 'gold query %s has error on database file %s' % (g_str, db_path)
