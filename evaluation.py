@@ -566,7 +566,7 @@ def evaluate(gold, predict, db_dir, etype, kmaps, plug_value, keep_distinct, pro
         for idx, pg in enumerate(zip(p, g)):
             p, g = pg
             p_str = p[0]
-            p_str = p_str.replace("value", "1")
+            p_str = p_str.replace(" value ", " 1 ")
             g_str, db = g
             db_name = db
             db = os.path.join(db_dir, db, db + ".sqlite")
