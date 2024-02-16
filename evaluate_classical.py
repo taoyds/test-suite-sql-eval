@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 from typing import List, Dict, Any, Tuple
 import pickle as pkl
 import tqdm
@@ -59,14 +60,14 @@ def judge(args: Tuple[Dict[str, Any], str, bool]) -> bool:
     for testcase_path in testsuite_paths:
 
         start = time.time()
-        flg, gold_result = exec_on_db(testcase_path, gold_query, timeout=GOLD_TIMEOUT)
+        flg, gold_result = asyncio.run(exec_on_db(testcase_path, gold_query, timeout=GOLD_TIMEOUT))
         duration = time.time() - start
         timeout = ADDITIVE_OVERHEAD + MULTIPLICATIVE_OVERHEAD * duration
 
         if flg != 'result':
             print('Warning: executing gold query results in an exception')
             continue
-        flg, pred_result = exec_on_db(testcase_path, pred, timeout=int(timeout))
+        flg, pred_result = asyncio.run(exec_on_db(testcase_path, pred, timeout=int(timeout)))
         if flg != 'result':
             pass_all_testcase = False
             break
